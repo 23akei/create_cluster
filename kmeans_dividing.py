@@ -8,7 +8,7 @@ from sklearn.cluster import KMeans
 
 EXPORT_DIR = "export/"
 K = 3
-N = 64
+N = 32
 
 # devide img
 IMG_FILE = "imgs/total_img_74.jpg"
@@ -16,15 +16,11 @@ img = cv2.imread(IMG_FILE)
 h,w = img.shape[:2]
 y0 = int(h/N)
 x0 = int(h/N)
+s = min(y0,x0)*N
+img = cv2.resize(img, (s,s), cv2.INTER_CUBIC)
 imgs = [img[x0*x:x0*(x+1), y0*y:y0*(y+1)] for x in range(N) for y in range(N)]
-features = np.array([cv2.cvtColor(cv2.resize(i, (x0, y0), cv2.INTER_CUBIC), cv2.COLOR_BGR2RGB) for i in imgs if i.size != 0])
+features = np.array([cv2.cvtColor(cv2.resize(i, (x0, y0), cv2.INTER_CUBIC), cv2.COLOR_BGR2RGB) for i in imgs])
 print(features.shape)
-
-col = 10
-row = int(len(features) / col) + 1
-cols = 64*2
-rows = 64*2
-dpis = 150
 
 train_data = features.reshape(features.shape[0], features.shape[1]*features.shape[2]*features.shape[3]).astype('float32') / 255.0
 print(train_data.shape)
@@ -35,8 +31,13 @@ y_res = model.fit_predict(train_data)
 
 result_dict = dict(zip(range(0,len(y_res)),y_res))
 result_list = sorted(result_dict.items(), key=lambda x:x[1])
-# 結果出力
 
+# 結果出力
+col = 10
+row = int(len(features) / col) + 1
+cols = 64*2
+rows = 64*2
+dpis = 150
 fig = plt.figure(figsize=(cols, rows), dpi=dpis)
 index = 1
 for (i, label) in result_list:
@@ -49,12 +50,12 @@ for (i, label) in result_list:
 fig.savefig(EXPORT_DIR+'kmeans_divideing_result.jpg')
 
 colors=["r","g","b"]
-fig2 = plt.figure(figsize=(cols, rows), dpi=dpis)
-ax = plt.axes()
-img = np.array(cv2.cvtColor(cv2.resize(img, (h, w), cv2.INTER_CUBIC), cv2.COLOR_BGR2RGB))
-plt.imshow(img)
 W = w//N
 H = h//N
+fig2 = plt.figure(figsize=(N*4, N*4), dpi=dpis)
+ax = plt.axes()
+img = np.array(cv2.cvtColor(img, cv2.COLOR_BGR2RGB))
+plt.imshow(img)
 for i, label in result_dict.items():
     rect = patches.Rectangle(xy=(W*(i%N),H*(i//N)),width=W, height=H, fc=colors[label],fill=True,alpha=0.5)
     ax.add_patch(rect)
