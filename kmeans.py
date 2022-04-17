@@ -8,7 +8,8 @@ import numpy as np
 from sklearn.cluster import KMeans
 
 IMG_DIR = "imgs/"
-K = 2
+EXPORT_DIR = "export/"
+K = 3
 
 files = glob.glob(IMG_DIR+"*")
 
@@ -20,15 +21,11 @@ dpis = 100
 
 fig = plt.figure(figsize=(cols, rows), dpi=dpis)
 
-index = 1
 for f in files:
     try:
         img = Image.open(f)
         # print("open "+f)
         img_resize = img.resize((64, 64))
-        # plt.subplot(row, col, index)
-        # plt.imshow(img_resize, cmap='gray')
-        index += 1
     except OSError as e:
         print(e)
         quit()
@@ -41,17 +38,22 @@ train_data = features.reshape(features.shape[0], features.shape[1]*features.shap
 print(train_data.shape)
 
 # モデル定義
-model = KMeans(n_clusters=9, init='k-means++', max_iter=5000, random_state=0)
+model = KMeans(n_clusters=K, init='k-means++', max_iter=5000, random_state=0)
 y_res = model.fit_predict(train_data)
 
+result_dict = dict(zip(range(0,len(y_res)),y_res))
+result_list = sorted(result_dict.items(), key=lambda x:x[1])
 # 結果出力
 
 fig = plt.figure(figsize=(cols, rows), dpi=dpis)
 index = 1
 
-for label, p in zip(y_res, features):
+for (i, label) in result_list:
+    p = features[i]
     plt.subplot(row, col, index)
     plt.imshow(p, cmap='gray')
     plt.xlabel("cluster={}".format(label), fontsize=30)
     index += 1
     print("index:"+str(index)+"\tlabel:"+str(label))
+
+fig.savefig(EXPORT_DIR+'kmeans_result.jpg')
