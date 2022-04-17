@@ -1,38 +1,29 @@
 # coding: utf-8
- 
-from PIL import Image
+
 import cv2
-import glob
 import matplotlib.pyplot as plt
 import numpy as np
 from sklearn.cluster import KMeans
 
-IMG_DIR = "imgs/"
 EXPORT_DIR = "export/"
 K = 3
+N = 16
 
-files = glob.glob(IMG_DIR+"*")
+# devide img
+IMG_FILE = "imgs/total_img_74.jpg"
+img = cv2.imread(IMG_FILE)
+h,w = img.shape[:2]
+y0 = int(h/N)
+x0 = int(h/N)
+imgs = [img[x0*x:x0*(x+1), y0*y:y0*(y+1)] for x in range(N) for y in range(N)]
+features = np.array([cv2.cvtColor(cv2.resize(i, (x0, y0), cv2.INTER_CUBIC), cv2.COLOR_BGR2RGB) for i in imgs if i.size != 0])
+print(features.shape)
 
 col = 10
-row = int(len(files) / col) + 1
-cols = 64
-rows = 64
-dpis = 100
-
-fig = plt.figure(figsize=(cols, rows), dpi=dpis)
-
-for f in files:
-    try:
-        img = Image.open(f)
-        # print("open "+f)
-        img_resize = img.resize((64, 64))
-    except OSError as e:
-        print(e)
-        quit()
-        
-
-features = np.array([cv2.cvtColor(cv2.resize(cv2.imread(f), (64, 64), cv2.INTER_CUBIC), cv2.COLOR_BGR2RGB) for f in files])
-print(features.shape)
+row = int(len(features) / col) + 1
+cols = 64*2
+rows = 64*2
+dpis = 150
 
 train_data = features.reshape(features.shape[0], features.shape[1]*features.shape[2]*features.shape[3]).astype('float32') / 255.0
 print(train_data.shape)
@@ -56,4 +47,4 @@ for (i, label) in result_list:
     index += 1
     # print("index:"+str(index)+"\tlabel:"+str(label))
 
-fig.savefig(EXPORT_DIR+'kmeans_result.jpg')
+fig.savefig(EXPORT_DIR+'kmeans_devideing_result.jpg')
