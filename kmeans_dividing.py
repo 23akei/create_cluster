@@ -2,12 +2,13 @@
 
 import cv2
 import matplotlib.pyplot as plt
+import matplotlib.patches as patches
 import numpy as np
 from sklearn.cluster import KMeans
 
 EXPORT_DIR = "export/"
 K = 3
-N = 16
+N = 64
 
 # devide img
 IMG_FILE = "imgs/total_img_74.jpg"
@@ -38,7 +39,6 @@ result_list = sorted(result_dict.items(), key=lambda x:x[1])
 
 fig = plt.figure(figsize=(cols, rows), dpi=dpis)
 index = 1
-
 for (i, label) in result_list:
     p = features[i]
     plt.subplot(row, col, index)
@@ -46,5 +46,16 @@ for (i, label) in result_list:
     plt.xlabel("cluster={}".format(label), fontsize=30)
     index += 1
     # print("index:"+str(index)+"\tlabel:"+str(label))
+fig.savefig(EXPORT_DIR+'kmeans_divideing_result.jpg')
 
-fig.savefig(EXPORT_DIR+'kmeans_devideing_result.jpg')
+colors=["r","g","b"]
+fig2 = plt.figure(figsize=(cols, rows), dpi=dpis)
+ax = plt.axes()
+img = np.array(cv2.cvtColor(cv2.resize(img, (h, w), cv2.INTER_CUBIC), cv2.COLOR_BGR2RGB))
+plt.imshow(img)
+W = w//N
+H = h//N
+for i, label in result_dict.items():
+    rect = patches.Rectangle(xy=(W*(i%N),H*(i//N)),width=W, height=H, fc=colors[label],fill=True,alpha=0.5)
+    ax.add_patch(rect)
+ax.figure.savefig(EXPORT_DIR+"kemans_dividing_result2.jpg")
