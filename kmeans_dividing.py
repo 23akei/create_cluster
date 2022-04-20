@@ -14,10 +14,12 @@ N = 32
 IMG_FILE = "imgs/total_img_74.jpg"
 img = cv2.imread(IMG_FILE)
 h,w = img.shape[:2]
+print("h:",h,", w:",w)
 y0 = int(h/N)
 x0 = int(h/N)
 s = min(y0,x0)*N
 img = cv2.resize(img, (s,s), cv2.INTER_CUBIC)
+h, w = img.shape[:2]
 imgs = [img[x0*x:x0*(x+1), y0*y:y0*(y+1)] for x in range(N) for y in range(N)]
 features = np.array([cv2.cvtColor(cv2.resize(i, (x0, y0), cv2.INTER_CUBIC), cv2.COLOR_BGR2RGB) for i in imgs])
 print(features.shape)
